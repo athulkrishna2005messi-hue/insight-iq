@@ -1,0 +1,131 @@
+{
+  "info": {
+    "name": "InsightHub Mock API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "0.1.0"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:3000" },
+    { "key": "companyId", "value": "demo-company" },
+    { "key": "memberId", "value": "m1" },
+    { "key": "role", "value": "admin" },
+    { "key": "whopSecret", "value": "dev-secret" }
+  ],
+  "item": [
+    {
+      "name": "Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "x-company-id", "value": "{{companyId}}" }
+        ],
+        "url": { "raw": "{{baseUrl}}/api/dashboard/{{companyId}}", "host": ["{{baseUrl}}"], "path": ["api","dashboard","{{companyId}}"] }
+      }
+    },
+    {
+      "name": "Members List",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "x-company-id", "value": "{{companyId}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/members/{{companyId}}?limit=20", "host": ["{{baseUrl}}"], "path": ["api","members","{{companyId}}"], "query": [ {"key":"limit","value":"20"} ] }
+      }
+    },
+    {
+      "name": "Member Detail",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "x-company-id", "value": "{{companyId}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/members/{{companyId}}/{{memberId}}", "host": ["{{baseUrl}}"], "path": ["api","members","{{companyId}}","{{memberId}}"] }
+      }
+    },
+    {
+      "name": "Member Events",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "x-company-id", "value": "{{companyId}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/members/{{companyId}}/{{memberId}}/events", "host": ["{{baseUrl}}"], "path": ["api","members","{{companyId}}","{{memberId}}","events"] }
+      }
+    },
+    {
+      "name": "Cohorts List",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "x-company-id", "value": "{{companyId}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/cohorts/{{companyId}}", "host": ["{{baseUrl}}"], "path": ["api","cohorts","{{companyId}}"] }
+      }
+    },
+    {
+      "name": "Cohorts Create",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "x-company-id", "value": "{{companyId}}" }, { "key": "x-role", "value": "{{role}}" }, { "key": "content-type", "value": "application/json" } ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"New cohort\",\n  \"filterDefinition\": {\n    \"joinDateGte\": \"2024-01-01\"\n  }\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/api/cohorts/{{companyId}}", "host": ["{{baseUrl}}"], "path": ["api","cohorts","{{companyId}}"] }
+      }
+    },
+    {
+      "name": "Alerts List",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "x-company-id", "value": "{{companyId}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/alerts/{{companyId}}", "host": ["{{baseUrl}}"], "path": ["api","alerts","{{companyId}}"] }
+      }
+    },
+    {
+      "name": "Alerts Create",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "x-company-id", "value": "{{companyId}}" }, { "key": "x-role", "value": "{{role}}" }, { "key": "content-type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"ruleDefinition\": {\n    \"type\": \"risk_gt\",\n    \"threshold\": 0.7\n  }\n}" },
+        "url": { "raw": "{{baseUrl}}/api/alerts/{{companyId}}", "host": ["{{baseUrl}}"], "path": ["api","alerts","{{companyId}}"] }
+      }
+    },
+    {
+      "name": "Alerts Trigger",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "x-company-id", "value": "{{companyId}}" }, { "key": "x-role", "value": "{{role}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/alerts/{{companyId}}/trigger", "host": ["{{baseUrl}}"], "path": ["api","alerts","{{companyId}}","trigger"] }
+      }
+    },
+    {
+      "name": "Risk Ranked",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "x-company-id", "value": "{{companyId}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/risk/{{companyId}}", "host": ["{{baseUrl}}"], "path": ["api","risk","{{companyId}}"] }
+      }
+    },
+    {
+      "name": "Webhook (Whop)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "x-whop-secret", "value": "{{whopSecret}}" }, { "key": "content-type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"companyId\": \"{{companyId}}\",\n  \"memberId\": \"{{memberId}}\",\n  \"type\": \"payment_succeeded\",\n  \"metadata\": { \"amount\": 49 }\n}" },
+        "url": { "raw": "{{baseUrl}}/api/webhooks/whop", "host": ["{{baseUrl}}"], "path": ["api","webhooks","whop"] }
+      }
+    },
+    {
+      "name": "Settings Get",
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "x-company-id", "value": "{{companyId}}" } ],
+        "url": { "raw": "{{baseUrl}}/api/settings/{{companyId}}", "host": ["{{baseUrl}}"], "path": ["api","settings","{{companyId}}"] }
+      }
+    },
+    {
+      "name": "Settings Update (JSON)",
+      "request": {
+        "method": "POST",
+        "header": [ { "key": "x-company-id", "value": "{{companyId}}" }, { "key": "x-role", "value": "{{role}}" }, { "key": "content-type", "value": "application/json" } ],
+        "body": { "mode": "raw", "raw": "{\n  \"anonymize\": true\n}" },
+        "url": { "raw": "{{baseUrl}}/api/settings/{{companyId}}", "host": ["{{baseUrl}}"], "path": ["api","settings","{{companyId}}"] }
+      }
+    }
+  ]
+}
+
+

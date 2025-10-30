@@ -1,0 +1,391 @@
+openapi: 3.0.3
+info:
+  title: InsightHub Mock API
+  version: 0.1.0
+  description: Mock-first MVP API for InsightHub
+servers:
+  - url: http://localhost:3000
+    description: Local dev
+components:
+  securitySchemes:
+    CompanyHeader:
+      type: apiKey
+      in: header
+      name: x-company-id
+    RoleHeader:
+      type: apiKey
+      in: header
+      name: x-role
+  schemas:
+    KPI:
+      type: object
+      properties:
+        activeMembers: { type: integer }
+        new7d: { type: integer }
+        churn7d: { type: integer }
+        mrr: { type: number }
+        arpu: { type: number }
+        minutes: { type: integer }
+      required: [activeMembers, new7d, churn7d, mrr, arpu, minutes]
+    SeriesPoint:
+      type: object
+      properties:
+        date: { type: string, format: date }
+        active: { type: integer }
+        revenue: { type: number }
+        engagement: { type: integer }
+      required: [date, active, revenue, engagement]
+    DashboardResponse:
+      type: object
+      properties:
+        kpis: { $ref: '#/components/schemas/KPI' }
+        series:
+          type: array
+          items: { $ref: '#/components/schemas/SeriesPoint' }
+    Member:
+      type: object
+      properties:
+        memberId: { type: string }
+        companyId: { type: string }
+        email: { type: string }
+        displayName: { type: string }
+        joinDate: { type: string, format: date-time }
+        lastActiveAt: { type: string, format: date-time }
+        lifetimeValue: { type: number }
+        planIds:
+          type: array
+          items: { type: string }
+        engagementScore: { type: number }
+        riskScore: { type: number }
+      required: [memberId, companyId, email, displayName]
+    MembersListResponse:
+      type: object
+      properties:
+        items:
+          type: array
+          items: { $ref: '#/components/schemas/Member' }
+        total: { type: integer }
+    MemberEvent:
+      type: object
+      properties:
+        eventId: { type: string }
+        memberId: { type: string, nullable: true }
+        companyId: { type: string }
+        type: { type: string }
+        metadata: { type: object }
+        occurredAt: { type: string, format: date-time }
+    Cohort:
+      type: object
+      properties:
+        cohortId: { type: string }
+        companyId: { type: string }
+        name: { type: string }
+        filterDefinition: { type: object }
+        createdAt: { type: string, format: date-time }
+    Alert:
+      type: object
+      properties:
+        alertId: { type: string }
+        companyId: { type: string }
+        ruleDefinition: { type: object }
+        lastTriggeredAt: { type: string, format: date-time, nullable: true }
+    RiskItem:
+      type: object
+      properties:
+        memberId: { type: string }
+        displayName: { type: string }
+        email: { type: string }
+        riskScore: { type: number }
+        reasons:
+          type: array
+          items: { type: string }
+    Settings:
+      type: object
+      properties:
+        anonymize: { type: boolean }
+security:
+  - CompanyHeader: []
+paths:
+  /api/dashboard/{companyId}:
+    get:
+      summary: Get dashboard KPIs and series
+      parameters:
+        - in: path
+          name: companyId
+          schema: { type: string }
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/DashboardResponse' }
+
+  /api/members/{companyId}:
+    get:
+      summary: List members
+      parameters:
+        - in: path
+          name: companyId
+          schema: { type: string }
+          required: true
+        - in: query
+          name: q
+          schema: { type: string }
+        - in: query
+          name: limit
+          schema: { type: integer, default: 20 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MembersListResponse' }
+
+  /api/members/{companyId}/{memberId}:
+    get:
+      summary: Get member details
+      parameters:
+        - in: path
+          name: companyId
+          schema: { type: string }
+          required: true
+        - in: path
+          name: memberId
+          schema: { type: string }
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Member' }
+        '404': { description: Not found }
+
+  /api/members/{companyId}/{memberId}/events:
+    get:
+      summary: Get recent events for a member
+      parameters:
+        - in: path
+          name: companyId
+          schema: { type: string }
+          required: true
+        - in: path
+          name: memberId
+          schema: { type: string }
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/MemberEvent' }
+
+  /api/cohorts/{companyId}:
+    get:
+      summary: List cohorts
+      parameters:
+        - in: path
+          name: companyId
+          schema: { type: string }
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Cohort' }
+    post:
+      summary: Create cohort
+      security:
+        - CompanyHeader: []
+          RoleHeader: []
+      parameters:
+        - in: path
+          name: companyId
+          schema: { type: string }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name: { type: string }
+                filterDefinition: { type: object }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Cohort' }
+
+  /api/alerts/{companyId}:
+    get:
+      summary: List alerts
+      parameters:
+        - in: path
+          name: companyId
+          schema: { type: string }
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/Alert' }
+    post:
+      summary: Create alert
+      security:
+        - CompanyHeader: []
+          RoleHeader: []
+      parameters:
+        - in: path
+          name: companyId
+          schema: { type: string }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ruleDefinition: { type: object }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Alert' }
+
+  /api/alerts/{companyId}/trigger:
+    post:
+      summary: Trigger alerts (mock)
+      security:
+        - CompanyHeader: []
+          RoleHeader: []
+      parameters:
+        - in: path
+          name: companyId
+          schema: { type: string }
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  triggeredAt: { type: string }
+                  affected:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        alertId: { type: string }
+                        memberId: { type: string }
+
+  /api/risk/{companyId}:
+    get:
+      summary: Get ranked at-risk members
+      parameters:
+        - in: path
+          name: companyId
+          schema: { type: string }
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  items:
+                    type: array
+                    items: { $ref: '#/components/schemas/RiskItem' }
+                  fallback: { type: boolean }
+
+  /api/webhooks/whop:
+    post:
+      summary: Mocked Whop webhook receiver
+      security: []
+      parameters: []
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema: { type: object }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok: { type: boolean }
+                  stored: { type: boolean }
+                  eventId: { type: string }
+
+  /api/settings/{companyId}:
+    get:
+      summary: Get company settings
+      parameters:
+        - in: path
+          name: companyId
+          schema: { type: string }
+          required: true
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Settings' }
+    post:
+      summary: Update company settings
+      security:
+        - CompanyHeader: []
+          RoleHeader: []
+      parameters:
+        - in: path
+          name: companyId
+          schema: { type: string }
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/Settings' }
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                anonymize: { type: string, description: 'checkbox posts "on"' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Settings' }
+
+

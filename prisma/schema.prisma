@@ -1,0 +1,13 @@
+// Placeholder schema for future Prisma integration
+// provider will be enabled later; start with mocks in app
+
+// datasource db {
+//   provider = "postgresql"
+//   url      = env("DATABASE_URL")
+// }
+
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+

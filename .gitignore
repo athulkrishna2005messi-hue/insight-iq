@@ -1,0 +1,24 @@
+# Node
+node_modules/
+.next/
+out/
+dist/
+
+# Env
+.env*
+
+# Python
+__pycache__/
+.pytest_cache/
+*.pyc
+services/ml/.venv/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+
