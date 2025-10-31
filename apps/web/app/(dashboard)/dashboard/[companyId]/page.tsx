@@ -67,7 +67,13 @@ const KPI_TILES: KpiTile[] = [
 ];
 
 async function loadDashboardKpis(companyId: string): Promise<DashboardKpis> {
-  const res = await fetch(`/api/dashboard/${companyId}`, { cache: "no-store" });
+  const baseUrl =
+  process.env.NEXT_PUBLIC_BASE_URL ||
+  process.env.VERCEL_URL
+    ? `https://${process.env.VERCEL_URL}`
+    : "http://localhost:3000";
+
+const res = await fetch(`${baseUrl}/api/dashboard/${companyId}`, { cache: "no-store" });
   if (res.status === 404) {
     notFound();
   }
