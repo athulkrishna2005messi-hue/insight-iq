@@ -1,24 +1,11 @@
-import { mapWhopEvent, type WhopWebhookEvent } from "@/lib/whop/eventMapper";
-import { updateMockDatastore } from "@/lib/mock/updateMockDatastore";
-import { createHmac, timingSafeEqual } from "crypto";
+import { NextRequest } from "next/server";
+import { mockStore, mockCompany } from "@/lib/mock/datasource";
+import { randomUUID } from "crypto";
 
-const SIGNATURE_HEADER_PRIMARY = "whop-signature";
-const SIGNATURE_HEADER_FALLBACK = "whop-signature-v1";
-const PUBLIC_KEY_HEADER = "whop-public-key";
-
-function extractSignature(rawHeader: string | null): string | null {
-  if (!rawHeader) return null;
-  const header = rawHeader.trim();
-  if (!header) return null;
-
-  if (!header.includes("=")) {
-    return header;
-  }
-
-  const segments = header.split(",").map((segment) => segment.trim());
-  const signatureSegment = segments.find((segment) => segment.startsWith("s="));
-  if (!signatureSegment) return null;
-  return signatureSegment.slice(2);
+function validateSecret(req: NextRequest) {
+  const provided = req.headers.get("x-whop-secret");
+  const expected = process.env.WHOP_SECRET || process.env.WHOP_WEBHOOK_SECRET || "dev-secret";
+  return provided === expected;
 }
 
 function verifySignature(body: string, headers: Headers, secret: string, expectedPublicKey: string): boolean {
