@@ -14,6 +14,11 @@ pnpm install
 pnpm dev
 ```
 
+### Frontend styling (Tailwind + shadcn/ui)
+- Tailwind CSS is configured for the web app in `apps/web/tailwind.config.js` with global styles defined in `apps/web/app/globals.css`.
+- Generate additional shadcn/ui components with `pnpm --filter apps/web dlx shadcn@latest add <component>`.
+- When creating new UI primitives, place them under `apps/web/components/ui` to ensure Tailwind scans them.
+
 ML service:
 ```bash
 cd services/ml
