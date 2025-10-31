@@ -4,6 +4,9 @@ node_modules/
 out/
 dist/
 
+# TypeScript
+*.tsbuildinfo
+
 # Env
 .env*
 
@@ -20,5 +23,3 @@ Thumbs.db
 # Logs
 logs/
 *.log
-
-
