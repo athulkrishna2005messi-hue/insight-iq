@@ -4,7 +4,7 @@ import { randomUUID } from "crypto";
 
 function validateSecret(req: NextRequest) {
   const provided = req.headers.get("x-whop-secret");
-  const expected = process.env.WHOP_WEBHOOK_SECRET || "dev-secret";
+  const expected = process.env.WHOP_SECRET || process.env.WHOP_WEBHOOK_SECRET || "dev-secret";
   return provided === expected;
 }
 
