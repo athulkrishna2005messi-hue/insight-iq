@@ -21,7 +21,7 @@ export async function POST(req: NextRequest, { params }: { params: { companyId: 
     const form = await req.formData();
     const val = form.get("anonymize");
     // HTML checkbox posts 'on' when checked
-    anonymize = val === "on" || val === "true" || val === true;
+    anonymize = val === "on" || val === "true";
   }
   mockStore.settings[params.companyId] = { anonymize };
   return Response.json(mockStore.settings[params.companyId]);
