@@ -1,14 +1,11 @@
 export type Session = {
   companyId: string;
-  role: "admin" | "viewer";
+  role: "admin" | "member";
 };
 
-export function getSession(headers: Headers): Session | null {
-  // Mock session: read from header for now
-  const companyId = headers.get("x-company-id") ?? "demo-company";
-  if (!companyId) return null;
-  const role = (headers.get("x-role") as Session["role"]) ?? "admin";
+export function getSession(headers?: Headers): Session {
+  const companyId = headers?.get("x-company-id") ?? "mock-company";
+  const roleHeader = headers?.get("x-role");
+  const role: Session["role"] = roleHeader === "member" ? "member" : "admin";
   return { companyId, role };
 }
-
-
