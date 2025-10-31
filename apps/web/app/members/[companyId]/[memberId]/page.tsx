@@ -11,6 +11,11 @@ type Member = {
   planIds: string[];
   engagementScore: number;
   riskScore: number;
+  whopPlanTier?: string;
+  whopStatus?: 'active' | 'canceled' | 'refunded';
+  whopLastEventType?: string;
+  whopLastEventTs?: string;
+  whopRenewalDate?: string;
 };
 
 type EventItem = {
@@ -82,11 +87,17 @@ export default async function MemberDetail({ params }: { params: { companyId: st
   const displayName = settings.anonymize ? `${member.displayName[0]}***` : member.displayName;
   const email = settings.anonymize ? "***@***" : member.email;
 
+  const whopStatusBadgeColors: Record<string, string> = {
+    active: "bg-green-100 text-green-800",
+    canceled: "bg-yellow-100 text-yellow-800",
+    refunded: "bg-red-100 text-red-800"
+  };
+
   const stats = [
     { label: "Joined", value: new Date(member.joinDate).toLocaleDateString() },
     { label: "Last active", value: new Date(member.lastActiveAt).toLocaleString() },
     { label: "Plan", value: member.planIds.length ? member.planIds.join(", ") : "—" },
-    { label: "Lifetime value", value: `$${member.lifetimeValue.toFixed(2)}` },
+    { label: "Lifetime value", value: `${member.lifetimeValue.toFixed(2)}` },
     { label: "Engagement", value: member.engagementScore.toFixed(2) },
     { label: "Risk", value: member.riskScore.toFixed(2) }
   ];
@@ -107,6 +118,41 @@ export default async function MemberDetail({ params }: { params: { companyId: st
               </div>
             ))}
           </dl>
+
+          {member.whopPlanTier && (
+            <section className="mt-6 border-t border-gray-200 pt-6">
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-gray-500">Whop Integration</h3>
+              <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+                  <dt className="text-xs uppercase tracking-wide text-gray-500">Plan Tier</dt>
+                  <dd className="mt-1 font-medium text-gray-900">{member.whopPlanTier}</dd>
+                </div>
+                {member.whopStatus && (
+                  <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+                    <dt className="text-xs uppercase tracking-wide text-gray-500">Status</dt>
+                    <dd className="mt-1">
+                      <span className={`inline-flex rounded-full px-2 py-1 text-xs font-semibold ${whopStatusBadgeColors[member.whopStatus] || 'bg-gray-100 text-gray-800'}`}>
+                        {member.whopStatus.charAt(0).toUpperCase() + member.whopStatus.slice(1)}
+                      </span>
+                    </dd>
+                  </div>
+                )}
+                {member.whopLastEventType && member.whopLastEventTs && (
+                  <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+                    <dt className="text-xs uppercase tracking-wide text-gray-500">Last Event</dt>
+                    <dd className="mt-1 font-medium text-gray-900">{member.whopLastEventType}</dd>
+                    <dd className="text-xs text-gray-500">{new Date(member.whopLastEventTs).toLocaleString()}</dd>
+                  </div>
+                )}
+                {member.whopRenewalDate && (
+                  <div className="rounded-lg border border-gray-100 bg-gray-50 p-3">
+                    <dt className="text-xs uppercase tracking-wide text-gray-500">Renewal Date</dt>
+                    <dd className="mt-1 font-medium text-gray-900">{new Date(member.whopRenewalDate).toLocaleDateString()}</dd>
+                  </div>
+                )}
+              </div>
+            </section>
+          )}
 
           <section className="mt-8">
             <h2 className="text-lg font-semibold text-gray-900">Recent events</h2>
