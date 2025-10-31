@@ -17,6 +17,11 @@ export type MockMember = {
   planIds: string[];
   engagementScore: number;
   riskScore: number;
+  whopPlanTier?: string;
+  whopStatus?: 'active' | 'canceled' | 'refunded';
+  whopLastEventType?: string;
+  whopLastEventTs?: string;
+  whopRenewalDate?: string;
 };
 
 export type MockEvent = {
