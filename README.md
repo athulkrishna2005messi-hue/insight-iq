@@ -10,9 +10,28 @@ Prerequisites:
 
 Setup:
 ```bash
+# 1. Install dependencies
 pnpm install
+
+# 2. Configure environment variables
+cp .env.example .env.local
+# Edit .env.local with your actual Whop credentials
+
+# 3. Start development servers
 pnpm dev
 ```
+
+### Environment Variables
+Copy `.env.example` to `.env.local` and configure:
+
+- `WHOP_SECRET` - Webhook secret from your Whop app dashboard (validates incoming webhooks)
+- `WHOP_PUBLIC_KEY` - Public key for client-side Whop SDK (if needed)
+- `NEXT_PUBLIC_WHOP_ENV` - Environment mode: `development` or `production`
+- `ML_BASE_URL` - URL for the ML service (default: `http://localhost:8000`)
+
+**Important:** Only variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. Server-side secrets like `WHOP_SECRET` remain private.
+
+For CI/CD or hosting providers, add the same values as project secrets (e.g., GitHub Secrets `WHOP_SECRET`, `WHOP_PUBLIC_KEY`, `NEXT_PUBLIC_WHOP_ENV`, `ML_BASE_URL`) so workflows and deployments have access to them.
 
 ### Frontend styling (Tailwind + shadcn/ui)
 - Tailwind CSS is configured for the web app in `apps/web/tailwind.config.js` with global styles defined in `apps/web/app/globals.css`.

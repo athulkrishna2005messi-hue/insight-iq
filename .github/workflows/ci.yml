@@ -10,6 +10,13 @@ jobs:
   web:
     name: Web (Next.js)
     runs-on: ubuntu-latest
+    env:
+      # Whop secrets - configure these in your repository settings
+      WHOP_SECRET: ${{ secrets.WHOP_SECRET || 'dev-secret' }}
+      WHOP_PUBLIC_KEY: ${{ secrets.WHOP_PUBLIC_KEY || 'test-public-key' }}
+      NEXT_PUBLIC_WHOP_ENV: ${{ secrets.NEXT_PUBLIC_WHOP_ENV || 'development' }}
+      # ML service URL
+      ML_BASE_URL: ${{ secrets.ML_BASE_URL || 'http://localhost:8000' }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
