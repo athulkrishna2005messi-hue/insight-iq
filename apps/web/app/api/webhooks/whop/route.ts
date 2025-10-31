@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { mockStore } from "@/lib/mock/datasource";
+import { mockStore, mockCompany } from "@/lib/mock/datasource";
 import { randomUUID } from "crypto";
 
 function validateSecret(req: NextRequest) {
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
   }
 
   // Expect minimal fields: companyId, memberId, type, metadata
-  const companyId = payload.companyId || "demo-company";
+  const companyId = payload.companyId || mockCompany.companyId;
   const memberId = payload.memberId || null;
   const type = payload.type || "whop_event";
   const metadata = payload.metadata ?? payload;

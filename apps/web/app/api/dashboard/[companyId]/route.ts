@@ -1,14 +1,9 @@
-import { NextRequest } from "next/server";
-import { getSession } from "@/lib/auth/session";
-import { getMockDashboard } from "@/lib/mock/dashboard";
+import { getMockKpis } from "@/lib/mock/datasource";
 
-export async function GET(req: NextRequest, { params }: { params: { companyId: string } }) {
-  const session = getSession(req.headers);
-  if (!session || session.companyId !== params.companyId) {
-    return new Response("Unauthorized", { status: 401 });
+export async function GET(_req: Request, { params }: { params: { companyId: string } }) {
+  const data = getMockKpis(params.companyId);
+  if (!data) {
+    return new Response("Not found", { status: 404 });
   }
-  const data = getMockDashboard(params.companyId);
   return Response.json(data);
 }
-
-
