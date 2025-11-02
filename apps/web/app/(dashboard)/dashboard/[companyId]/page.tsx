@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import { notFound } from "next/navigation";
 
 type DashboardKpis = {
@@ -49,13 +48,11 @@ const KPI_TILES: KpiTile[] = [
 
 // ---------- DATA LOADER ----------
 async function loadDashboardKpis(companyId: string): Promise<DashboardKpis> {
-  const baseUrl =
-  process.env.NEXT_PUBLIC_BASE_URL ||
-  process.env.VERCEL_URL
+  const baseUrl = process.env.VERCEL_URL
     ? `https://${process.env.VERCEL_URL}`
-    : "http://localhost:3000";
+    : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
-const res = await fetch(`${baseUrl}/api/dashboard/${companyId}`, { cache: "no-store" });
+  const res = await fetch(`${baseUrl}/api/dashboard/${companyId}`, { cache: "no-store" });
   if (res.status === 404) {
     notFound();
   }
@@ -65,38 +62,6 @@ const res = await fetch(`${baseUrl}/api/dashboard/${companyId}`, { cache: "no-st
   return res.json();
 }
 
-// ---------- STYLES ----------
-const GRID_STYLE: CSSProperties = {
-  display: "grid",
-  gap: "16px",
-  gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))"
-};
-
-const CARD_STYLE: CSSProperties = {
-  borderRadius: "16px",
-  border: "1px solid rgba(148, 163, 184, 0.2)",
-  background:
-    "linear-gradient(135deg, rgba(248, 250, 252, 0.95), rgba(226, 232, 240, 0.85))",
-  padding: "20px",
-  boxShadow: "0 12px 32px rgba(15, 23, 42, 0.08)",
-  display: "flex",
-  flexDirection: "column",
-  justifyContent: "space-between",
-  gap: "12px"
-};
-
-const TREND_CARD_STYLE: CSSProperties = {
-  borderRadius: "16px",
-  border: "1px solid rgba(148, 163, 184, 0.2)",
-  background:
-    "linear-gradient(135deg, rgba(239, 246, 255, 0.9), rgba(219, 234, 254, 0.9))",
-  padding: "24px",
-  boxShadow: "0 16px 40px rgba(30, 64, 175, 0.18)",
-  display: "flex",
-  flexDirection: "column",
-  gap: "20px"
-};
-
 // ---------- COMPONENT ----------
 export default async function DashboardPage({
   params
@@ -105,58 +70,32 @@ export default async function DashboardPage({
 }) {
   const data = await loadDashboardKpis(params.companyId);
 
-  const maxTrend = data.trend.length ? Math.max(...data.trend) : 0;
-  const minTrend = data.trend.length ? Math.min(...data.trend) : 0;
-  const firstTrend = data.trend[0] ?? 0;
-  const lastTrend = data.trend[data.trend.length - 1] ?? 0;
-  const trendDelta = lastTrend - firstTrend;
-  const trendDeltaPercent =
-    firstTrend === 0 ? 0 : (trendDelta / firstTrend) * 100;
+  const getTrendStats = (trend: number[]) => {
+    if (!trend.length) {
+      return { max: 0, min: 0, first: 0, last: 0, delta: 0, deltaPercent: 0 };
+    }
+    const max = Math.max(...trend);
+    const min = Math.min(...trend);
+    const first = trend[0] ?? 0;
+    const last = trend[trend.length - 1] ?? 0;
+    const delta = last - first;
+    const deltaPercent = first !== 0 ? (delta / first) * 100 : 0;
+    return { max, min, first, last, delta, deltaPercent };
+  };
+
+  const trendStats = getTrendStats(data.trend);
 
   return (
-    <main
-      className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-10"
-      style={{
-        margin: "0 auto",
-        width: "100%",
-        maxWidth: "1100px",
-        padding: "40px 24px",
-        display: "flex",
-        flexDirection: "column",
-        gap: "40px"
-      }}
-    >
+    <main className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-6 py-10">
       {/* ---------- HEADER ---------- */}
-      <header
-        className="space-y-3"
-        style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-      >
-        <span
-          className="text-sm font-medium uppercase tracking-wide text-slate-500"
-          style={{
-            fontSize: "12px",
-            letterSpacing: "0.32em",
-            textTransform: "uppercase",
-            color: "#64748b"
-          }}
-        >
+      <header className="flex flex-col gap-2">
+        <span className="text-xs font-medium uppercase tracking-[0.32em] text-slate-500">
           Company overview
         </span>
-        <h1
-          className="text-3xl font-semibold tracking-tight text-slate-900"
-          style={{
-            fontSize: "32px",
-            fontWeight: 600,
-            color: "#0f172a",
-            letterSpacing: "-0.03em"
-          }}
-        >
+        <h1 className="text-3xl font-semibold tracking-tighter text-slate-900">
           Performance for {data.companyId}
         </h1>
-        <p
-          className="text-sm text-slate-500"
-          style={{ fontSize: "15px", color: "#475569", maxWidth: "540px" }}
-        >
+        <p className="max-w-xl text-sm text-slate-600">
           Live KPIs aggregated from the mock data source. Use these numbers to
           explore the dashboard experience and validate integrations.
         </p>
@@ -164,7 +103,7 @@ export default async function DashboardPage({
 
       {/* ---------- KPI GRID ---------- */}
       <section>
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" style={GRID_STYLE}>
+        <div className="grid gap-4 [grid-template-columns:repeat(auto-fit,minmax(220px,1fr))]">
           {KPI_TILES.map((tile) => {
             const value = data[tile.key];
             const formatted = tile.format
@@ -173,25 +112,12 @@ export default async function DashboardPage({
             return (
               <div
                 key={tile.key}
-                className="rounded-xl border bg-white shadow-sm"
-                style={CARD_STYLE}
+                className="flex flex-col justify-between gap-3 rounded-2xl border border-slate-300/20 bg-gradient-to-br from-slate-50/95 to-slate-200/85 p-5 shadow-[0_12px_32px_rgba(15,23,42,0.08)]"
               >
-                <span
-                  className="text-sm font-medium uppercase tracking-wide text-slate-500"
-                  style={{
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.22em",
-                    color: "#64748b"
-                  }}
-                >
+                <span className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">
                   {tile.label}
                 </span>
-                <span
-                  className="text-3xl font-semibold text-slate-900"
-                  style={{ fontSize: "36px", fontWeight: 600, color: "#0f172a" }}
-                >
+                <span className="text-4xl font-semibold text-slate-900">
                   {formatted}
                 </span>
               </div>
@@ -201,119 +127,56 @@ export default async function DashboardPage({
       </section>
 
       {/* ---------- TREND SECTION ---------- */}
-      <section
-        className="space-y-4"
-        style={{ display: "flex", flexDirection: "column", gap: "16px" }}
-      >
-        <div
-          className="flex items-start justify-between gap-4"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            gap: "16px"
-          }}
-        >
-          <div
-            className="space-y-1"
-            style={{ display: "flex", flexDirection: "column", gap: "6px" }}
-          >
-            <h2
-              className="text-lg font-semibold tracking-tight text-slate-900"
-              style={{ fontSize: "20px", fontWeight: 600, color: "#0f172a" }}
-            >
+      <section className="flex flex-col gap-4">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex flex-col gap-1.5">
+            <h2 className="text-xl font-semibold tracking-tight text-slate-900">
               Active user trend
             </h2>
-            <p
-              className="text-sm text-slate-500"
-              style={{ fontSize: "14px", color: "#475569", maxWidth: "480px" }}
-            >
+            <p className="max-w-md text-sm text-slate-600">
               Weekly active accounts over the past seven intervals with a simple
               sparkline approximation.
             </p>
           </div>
-          <div className="text-right" style={{ textAlign: "right" }}>
+          <div className="text-right">
+            <div className="text-3xl font-semibold text-slate-900">{numberFormatter.format(trendStats.last)}</div>
             <div
-              className="text-2xl font-semibold text-slate-900"
-              style={{ fontSize: "28px", fontWeight: 600, color: "#0f172a" }}
+              className={`text-sm ${trendStats.delta >= 0 ? "text-emerald-700" : "text-red-700"}`}
             >
-              {numberFormatter.format(lastTrend)}
-            </div>
-            <div
-              className="text-sm"
-              style={{
-                fontSize: "13px",
-                color: trendDelta >= 0 ? "#047857" : "#b91c1c"
-              }}
-            >
-              {trendDelta >= 0 ? "▲" : "▼"}{" "}
-              {percentFormatter.format(Math.abs(trendDeltaPercent))}% vs start
+              {trendStats.delta >= 0 ? "▲" : "▼"}{" "}
+              {percentFormatter.format(Math.abs(trendStats.deltaPercent))}% vs start
             </div>
           </div>
         </div>
 
         {/* ---------- SPARKLINE BAR CHART ---------- */}
         <div
-          className="flex h-48 items-end gap-2 rounded-xl border bg-white shadow-sm"
-          style={{
-            ...TREND_CARD_STYLE,
-            height: "240px"
-          }}
+          className="flex h-60 flex-col gap-5 rounded-2xl border border-slate-300/20 bg-gradient-to-br from-blue-50/90 to-blue-100/90 p-6 shadow-[0_16px_40px_rgba(30,64,175,0.18)]"
           role="img"
           aria-label={`Weekly active users: ${data.trend.join(", ")}`}
         >
-          <div
-            className="flex flex-1 items-end gap-3"
-            style={{
-              display: "flex",
-              flex: 1,
-              alignItems: "flex-end",
-              gap: "12px",
-              height: "100%"
-            }}
-          >
+          <div className="flex h-full flex-1 items-end gap-3">
             {data.trend.map((value, index) => {
-              const heightPercent =
-                maxTrend === 0 ? 0 : (value / maxTrend) * 100;
+              const heightPercent = trendStats.max !== 0 ? (value / trendStats.max) * 100 : 0;
               return (
                 <div
-                  key={`${value}-${index}`}
-                  className="flex-1 rounded-full bg-blue-500"
+                  key={index}
                   style={{
-                    flex: 1,
-                    minWidth: "12px",
-                    borderRadius: "12px",
-                    background:
-                      "linear-gradient(180deg, rgba(59,130,246,0.9), rgba(37,99,235,0.85))",
                     height: `${Math.max(10, heightPercent)}%`
                   }}
-                  aria-hidden="true"
+                  className="min-w-[12px] flex-1 rounded-xl bg-gradient-to-b from-blue-500/90 to-blue-600/85 transition-[height] duration-300 ease-in-out"
                 />
               );
             })}
           </div>
-          <div
-            className="flex flex-col justify-between text-xs text-slate-500"
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              fontSize: "12px",
-              color: "#475569"
-            }}
-          >
-            <span>High: {numberFormatter.format(maxTrend)}</span>
-            <span>Low: {numberFormatter.format(minTrend)}</span>
+          <div className="flex flex-col justify-between text-xs text-slate-600">
+            <span>High: {numberFormatter.format(trendStats.max)}</span>
+            <span>Low: {numberFormatter.format(trendStats.min)}</span>
           </div>
         </div>
 
         <div
           className="flex justify-between text-xs text-slate-400"
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            fontSize: "12px",
-            color: "#94a3b8"
-          }}
         >
           {data.trend.map((_, index) => (
             <span key={`label-${index}`}>W{index + 1}</span>
