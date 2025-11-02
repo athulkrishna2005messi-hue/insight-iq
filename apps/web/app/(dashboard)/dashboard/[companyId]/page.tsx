@@ -52,12 +52,24 @@ async function loadDashboardKpis(companyId: string): Promise<DashboardKpis> {
     ? `https://${process.env.VERCEL_URL}`
     : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
-  const res = await fetch(`${baseUrl}/api/dashboard/${companyId}`, { cache: "no-store" });
+  const res = await fetch(`${baseUrl}/api/dashboard/${companyId}`, {
+    cache: "no-store",
+    headers: {
+      "x-company-id": companyId
+    }
+  });
+
   if (res.status === 404) {
     notFound();
   }
   if (!res.ok) {
-    throw new Error("Failed to load dashboard KPIs");
+    const statusText = res.statusText || "Unknown error";
+    const errorBody = await res.text().catch(() => "Unable to read error details");
+    console.error(
+      `[Dashboard KPI] Fetch failed for company ${companyId}: ` +
+      `status=${res.status}, statusText=${statusText}, body=${errorBody}`
+    );
+    throw new Error(`Failed to load dashboard KPIs: ${res.status} ${statusText}`);
   }
   return res.json();
 }
