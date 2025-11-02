@@ -16,6 +16,8 @@ __pycache__/
 .pytest_cache/
 *.pyc
 services/ml/.venv/
+services/ml/.venv-new/
+services/ml/venv/
 
 # OS
 .DS_Store
