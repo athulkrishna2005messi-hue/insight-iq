@@ -1,5 +1,9 @@
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from fastapi.testclient import TestClient
-from services.ml.main import app
+from main import app
 
 
 def test_health():
